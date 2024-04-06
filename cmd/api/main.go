@@ -45,9 +45,12 @@ func main() {
 	carCatalogService := service.NewCarCatalogService(carRepo, peopleRepo)
 
 	// handler
-	http.NewHandler(carCatalogService)
+	handler := http.NewHandler(carCatalogService)
 
-	//srv := httpserver.New(handler)
+	srv := NewServer(handler, cfg)
 
-
+	err = srv.Start()
+	if err != nil{
+		// log fatal
+	}
 }
