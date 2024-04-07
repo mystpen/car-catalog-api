@@ -12,10 +12,10 @@ import (
 type Level int8
 
 const (
-	LevelInfo  Level = iota 
-	LevelError             
-	LevelFatal              
-	LevelOff                
+	LevelInfo Level = iota
+	LevelError
+	LevelFatal
+	LevelOff
 )
 
 func (l Level) String() string {
@@ -52,7 +52,7 @@ func (l *Logger) PrintError(err error, properties map[string]string) {
 }
 func (l *Logger) PrintFatal(err error, properties map[string]string) {
 	l.print(LevelFatal, err.Error(), properties)
-	os.Exit(1) 
+	os.Exit(1)
 }
 
 func (l *Logger) print(level Level, message string, properties map[string]string) (int, error) {
@@ -72,7 +72,7 @@ func (l *Logger) print(level Level, message string, properties map[string]string
 		Message:    message,
 		Properties: properties,
 	}
-	
+
 	if level >= LevelError {
 		aux.Trace = string(debug.Stack())
 	}
@@ -90,3 +90,6 @@ func (l *Logger) print(level Level, message string, properties map[string]string
 	return l.out.Write(append(line, '\n'))
 }
 
+func (l *Logger) Write(message []byte) (n int, err error) {
+	return l.print(LevelError, string(message), nil)
+}

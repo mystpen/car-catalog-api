@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 
@@ -8,33 +10,36 @@ import (
 	"github.com/mystpen/car-catalog-api/internal/delivery/http"
 	"github.com/mystpen/car-catalog-api/internal/repository/postgresql"
 	"github.com/mystpen/car-catalog-api/internal/service"
+	"github.com/mystpen/car-catalog-api/pkg/logger"
 )
 
 func main() {
+	logger := logger.New(os.Stdout, logger.LevelInfo)
+
 	cfg, err := config.Load()
 	if err != nil {
-		// logger.ErrLog.Fatal(err)
+		logger.PrintError(err, nil)
 	}
 
 	// Connect to DB
 	db, err := openDB(*cfg)
 	if err != nil {
-		// logger.ErrLog.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 	defer db.Close()
 
 	// Database migrations
 	migrationDriver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
-		// logger.ErrLog.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 	migrator, err := migrate.NewWithDatabaseInstance("file://migrations", "postgres", migrationDriver)
 	if err != nil {
-		// logger.ErrLog.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 	err = migrator.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		// logger.ErrLog.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 
 	// prepare repo
@@ -47,10 +52,13 @@ func main() {
 	// handler
 	handler := http.NewHandler(carCatalogService)
 
-	srv := NewServer(handler, cfg)
+	srv := NewServer(
+		handler,
+		cfg,
+		logger)
 
 	err = srv.Start()
-	if err != nil{
-		// log fatal
+	if err != nil {
+		logger.PrintFatal(err, nil)
 	}
 }
