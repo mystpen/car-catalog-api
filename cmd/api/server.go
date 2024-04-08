@@ -49,7 +49,7 @@ func (s httpserver) Start() error {
 
 		signal := <-quit
 
-		logger.PrintInfo("shutting down server", map[string]string{
+		logger.PrintInfo("shutting down server", map[string]any{
 			"signal": signal.String(),
 		})
 
@@ -59,7 +59,7 @@ func (s httpserver) Start() error {
 		shutdownError <- srv.Shutdown(ctx)
 	}()
 
-	logger.PrintInfo("starting server", map[string]string{
+	logger.PrintInfo("starting server", map[string]any{
 		"addr": srv.Addr,
 	})
 
@@ -73,7 +73,7 @@ func (s httpserver) Start() error {
 		return err
 	}
 
-	logger.PrintInfo("stopped server", map[string]string{
+	logger.PrintInfo("stopped server", map[string]any{
 		"addr": srv.Addr,
 	})
 

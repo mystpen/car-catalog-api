@@ -8,6 +8,7 @@ import (
 	"github.com/mystpen/car-catalog-api/internal/repository/postgresql"
 	"github.com/mystpen/car-catalog-api/pkg/errorres"
 	"github.com/mystpen/car-catalog-api/pkg/jsonutil"
+	"github.com/mystpen/car-catalog-api/pkg/logger"
 	"github.com/mystpen/car-catalog-api/pkg/validator"
 )
 
@@ -28,8 +29,19 @@ func (h *Handler) listCarsHandler(w http.ResponseWriter, r *http.Request) {
 	filters.Model = readString(qs, "model", "")
 	filters.Year = readInt(qs, "year", 0, v)
 
+	logger.PrintDebug("", map[string]any{
+		"method": r.Method,
+		"url": r.URL.String(),
+		"filters": filters,
+	})
+
 	cars, err := h.service.GetAll(filters)
 
+	logger.PrintDebug("", map[string]any{
+		"url": r.URL.String(),
+		"number of records": len(cars),
+		"cars list": cars,
+	})
 	// Send a JSON response containing the car info.
 	err = jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"cars": cars}, nil)
 	if err != nil {
@@ -47,6 +59,11 @@ func (h *Handler) addCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 		errorres.BadRequestResponse(w, r, err)
 		return
 	}
+	logger.PrintDebug("", map[string]any{
+		"method": r.Method,
+		"url": r.URL.String(),
+		"input": input.RegNums,
+	})
 
 	// validate
 	var cars *[]model.CarInfo
@@ -89,6 +106,13 @@ func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 		Year   *int    `json:"year"`
 	}
 
+	logger.PrintDebug("", map[string]any{
+		"method": r.Method,
+		"url": r.URL.String(),
+		"id": id,
+		"input": input,
+	})
+
 	err = jsonutil.ReadJSON(w, r, &input)
 	if err != nil {
 		errorres.BadRequestResponse(w, r, err)
@@ -116,6 +140,10 @@ func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.PrintDebug("Updated", map[string]any{
+		"car": car,
+	})
+
 	err = jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"car": car}, nil)
 	if err != nil {
 		errorres.ServerErrorResponse(w, r, err)
@@ -128,6 +156,12 @@ func (h *Handler) deleteCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 		errorres.NotFoundResponse(w, r)
 		return
 	}
+
+	logger.PrintDebug("", map[string]any{
+		"method": r.Method,
+		"url": r.URL.String(),
+		"id": id,
+	})
 
 	err = h.service.Delete(id)
 	if err != nil{

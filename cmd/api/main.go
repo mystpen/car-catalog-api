@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	logger.New(os.Stdout, logger.LevelInfo)
+	logger.New(os.Stdout, logger.LevelDebug)
 
 	cfg, err := config.Load()
 	if err != nil {

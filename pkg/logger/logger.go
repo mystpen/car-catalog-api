@@ -14,7 +14,8 @@ import (
 type Level int8
 
 const (
-	LevelInfo Level = iota
+	LevelDebug Level = iota
+	LevelInfo
 	LevelError
 	LevelFatal
 	LevelOff
@@ -22,6 +23,8 @@ const (
 
 func (l Level) String() string {
 	switch l {
+	case LevelDebug:
+		return "DEBUG"
 	case LevelInfo:
 		return "INFO"
 	case LevelError:
@@ -39,7 +42,6 @@ func init() {
 	l = New(os.Stdout, LevelInfo)
 }
 
-
 type Logger struct {
 	out      io.Writer
 	minLevel Level
@@ -52,29 +54,31 @@ func New(out io.Writer, minLevel Level) *Logger {
 		minLevel: minLevel,
 	}
 }
-
-func PrintInfo(message string, properties map[string]string) {
+func PrintDebug(message string, properties map[string]any) {
+	l.print(LevelDebug, message, properties)
+}
+func PrintInfo(message string, properties map[string]any) {
 	l.print(LevelInfo, message, properties)
 }
-func  PrintError(err error, properties map[string]string) {
+func PrintError(err error, properties map[string]any) {
 	l.print(LevelError, err.Error(), properties)
 }
-func PrintFatal(err error, properties map[string]string) {
+func PrintFatal(err error, properties map[string]any) {
 	l.print(LevelFatal, err.Error(), properties)
 	os.Exit(1)
 }
 
-func (l *Logger) print(level Level, message string, properties map[string]string) (int, error) {
+func (l *Logger) print(level Level, message string, properties map[string]any) (int, error) {
 	if level < l.minLevel {
 		return 0, nil
 	}
 
 	aux := struct {
-		Level      string            `json:"level"`
-		Time       string            `json:"time"`
-		Message    string            `json:"message"`
-		Properties map[string]string `json:"properties,omitempty"`
-		Trace      string            `json:"trace,omitempty"`
+		Level      string         `json:"level"`
+		Time       string         `json:"time"`
+		Message    string         `json:"message,omitempty"`
+		Properties map[string]any `json:"properties,omitempty"`
+		Trace      string         `json:"trace,omitempty"`
 	}{
 		Level:      level.String(),
 		Time:       time.Now().UTC().Format(time.RFC3339),
@@ -82,7 +86,7 @@ func (l *Logger) print(level Level, message string, properties map[string]string
 		Properties: properties,
 	}
 
-	if level >= LevelError {
+	if level >= LevelError || level == LevelDebug {
 		aux.Trace = string(debug.Stack())
 	}
 

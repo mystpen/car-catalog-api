@@ -9,7 +9,7 @@ import (
 )
 
 func LogError(r *http.Request, err error) {
-	logger.PrintError(err, map[string]string{
+	logger.PrintError(err, map[string]any{
 		"request_method": r.Method,
 		"request_url":    r.URL.String(),
 	})
