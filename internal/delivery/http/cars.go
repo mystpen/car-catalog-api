@@ -2,8 +2,10 @@ package http
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/mystpen/car-catalog-api/internal/delivery"
 	"github.com/mystpen/car-catalog-api/internal/model"
 	"github.com/mystpen/car-catalog-api/internal/repository/postgresql"
 	"github.com/mystpen/car-catalog-api/pkg/errorres"
@@ -25,22 +27,35 @@ func (h *Handler) listCarsHandler(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
 	v := validator.New()
 
+	// regNum
 	filters.Mark = readString(qs, "mark", "")
 	filters.Model = readString(qs, "model", "")
 	filters.Year = readInt(qs, "year", 0, v)
 
+	filters.Page = readInt(qs, "page", 1, v)
+	filters.PageSize = readInt(qs, "page_size", 10, v)
+
+	if delivery.ValidateFilters(v, filters); !v.Valid() {
+		errorres.FailedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	logger.PrintDebug("", map[string]any{
-		"method": r.Method,
-		"url": r.URL.String(),
+		"method":  r.Method,
+		"url":     r.URL.String(),
 		"filters": filters,
 	})
 
 	cars, err := h.service.GetAll(filters)
+	if err != nil {
+		errorres.ServerErrorResponse(w, r, err)
+		return
+	}
 
 	logger.PrintDebug("", map[string]any{
-		"url": r.URL.String(),
+		"url":               r.URL.String(),
 		"number of records": len(cars),
-		"cars list": cars,
+		"cars list":         cars,
 	})
 	// Send a JSON response containing the car info.
 	err = jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"cars": cars}, nil)
@@ -59,13 +74,20 @@ func (h *Handler) addCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 		errorres.BadRequestResponse(w, r, err)
 		return
 	}
+	
 	logger.PrintDebug("", map[string]any{
 		"method": r.Method,
-		"url": r.URL.String(),
-		"input": input.RegNums,
+		"url":    r.URL.String(),
+		"input":  input.RegNums,
 	})
-
+	fmt.Println("//////////////////////////////////////////")
 	// validate
+	v := validator.New()
+	if delivery.ValidateRegNums(v, input.RegNums); !v.Valid() {
+		errorres.FailedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	var cars *[]model.CarInfo
 	err = h.service.InsertRegNums(input.RegNums, cars)
 	if err != nil {
@@ -108,9 +130,9 @@ func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.PrintDebug("", map[string]any{
 		"method": r.Method,
-		"url": r.URL.String(),
-		"id": id,
-		"input": input,
+		"url":    r.URL.String(),
+		"id":     id,
+		"input":  input,
 	})
 
 	err = jsonutil.ReadJSON(w, r, &input)
@@ -133,9 +155,14 @@ func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// validate
+	v := validator.New()
+	if delivery.ValidateCarInfo(v, car); !v.Valid() {
+		errorres.FailedValidationResponse(w, r, v.Errors)
+		return
+	}
 
 	err = h.service.Update(car)
-	if err != nil{
+	if err != nil {
 		errorres.ServerErrorResponse(w, r, err)
 		return
 	}
@@ -159,12 +186,12 @@ func (h *Handler) deleteCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.PrintDebug("", map[string]any{
 		"method": r.Method,
-		"url": r.URL.String(),
-		"id": id,
+		"url":    r.URL.String(),
+		"id":     id,
 	})
 
 	err = h.service.Delete(id)
-	if err != nil{
+	if err != nil {
 		switch {
 		case errors.Is(err, postgresql.ErrRecordNotFound):
 			errorres.NotFoundResponse(w, r)

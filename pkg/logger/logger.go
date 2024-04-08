@@ -39,7 +39,7 @@ func (l Level) String() string {
 var l *Logger
 
 func init() {
-	l = New(os.Stdout, LevelInfo)
+	l = New(os.Stdout, LevelDebug)
 }
 
 type Logger struct {
@@ -86,7 +86,7 @@ func (l *Logger) print(level Level, message string, properties map[string]any) (
 		Properties: properties,
 	}
 
-	if level >= LevelError || level == LevelDebug {
+	if level >= LevelError {
 		aux.Trace = string(debug.Stack())
 	}
 

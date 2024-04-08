@@ -17,7 +17,9 @@ type Person struct {
 }
 
 type Filters struct {
-	Mark  string
-	Model string
-	Year  int
+	Mark     string
+	Model    string
+	Year     int
+	Page     int
+	PageSize int
 }
