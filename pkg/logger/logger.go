@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+//var L *Logger
+
 type Level int8
 
 const (
@@ -31,6 +33,13 @@ func (l Level) String() string {
 	}
 }
 
+var l *Logger
+
+func init() {
+	l = New(os.Stdout, LevelInfo)
+}
+
+
 type Logger struct {
 	out      io.Writer
 	minLevel Level
@@ -44,13 +53,13 @@ func New(out io.Writer, minLevel Level) *Logger {
 	}
 }
 
-func (l *Logger) PrintInfo(message string, properties map[string]string) {
+func PrintInfo(message string, properties map[string]string) {
 	l.print(LevelInfo, message, properties)
 }
-func (l *Logger) PrintError(err error, properties map[string]string) {
+func  PrintError(err error, properties map[string]string) {
 	l.print(LevelError, err.Error(), properties)
 }
-func (l *Logger) PrintFatal(err error, properties map[string]string) {
+func PrintFatal(err error, properties map[string]string) {
 	l.print(LevelFatal, err.Error(), properties)
 	os.Exit(1)
 }

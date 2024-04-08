@@ -19,14 +19,12 @@ import (
 type httpserver struct {
 	handler *httphandl.Handler
 	config  *config.Config
-	logger  *logger.Logger
 }
 
-func NewServer(handler *httphandl.Handler, cfg *config.Config, logger *logger.Logger) httpserver {
+func NewServer(handler *httphandl.Handler, cfg *config.Config) httpserver {
 	return httpserver{
 		handler: handler,
 		config:  cfg,
-		logger:  logger,
 	}
 }
 
@@ -35,7 +33,7 @@ func (s httpserver) Start() error {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", s.config.Port),
 		Handler:      s.handler.Routes(),
-		ErrorLog:     log.New(s.logger, "", 0),
+		ErrorLog:     log.New(logger.New(os.Stdout, logger.LevelInfo), "", 0),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -51,7 +49,7 @@ func (s httpserver) Start() error {
 
 		signal := <-quit
 
-		s.logger.PrintInfo("shutting down server", map[string]string{
+		logger.PrintInfo("shutting down server", map[string]string{
 			"signal": signal.String(),
 		})
 
@@ -61,7 +59,7 @@ func (s httpserver) Start() error {
 		shutdownError <- srv.Shutdown(ctx)
 	}()
 
-	s.logger.PrintInfo("starting server", map[string]string{
+	logger.PrintInfo("starting server", map[string]string{
 		"addr": srv.Addr,
 	})
 
@@ -75,7 +73,7 @@ func (s httpserver) Start() error {
 		return err
 	}
 
-	s.logger.PrintInfo("stopped server", map[string]string{
+	logger.PrintInfo("stopped server", map[string]string{
 		"addr": srv.Addr,
 	})
 

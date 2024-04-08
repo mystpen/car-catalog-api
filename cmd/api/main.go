@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	logger := logger.New(os.Stdout, logger.LevelInfo)
+	logger.New(os.Stdout, logger.LevelInfo)
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -54,8 +54,7 @@ func main() {
 
 	srv := NewServer(
 		handler,
-		cfg,
-		logger)
+		cfg)
 
 	err = srv.Start()
 	if err != nil {
