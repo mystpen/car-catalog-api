@@ -1,9 +1,5 @@
 package http
 
-type CarCatalogService interface{
-
-}
-
 type Handler struct{
 	service CarCatalogService
 }
