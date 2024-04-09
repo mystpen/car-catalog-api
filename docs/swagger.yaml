@@ -1,0 +1,217 @@
+basePath: /
+definitions:
+  model.CarInfo:
+    properties:
+      id:
+        type: integer
+      mark:
+        type: string
+      model:
+        type: string
+      owner:
+        $ref: '#/definitions/model.Person'
+      regNum:
+        type: string
+      year:
+        type: integer
+    type: object
+  model.CarInput:
+    properties:
+      mark:
+        type: string
+      model:
+        type: string
+      owner:
+        properties:
+          name:
+            type: string
+          patronymic:
+            type: string
+          surname:
+            type: string
+        type: object
+      regNum:
+        type: string
+      year:
+        type: integer
+    type: object
+  model.Cars:
+    properties:
+      cars:
+        items:
+          $ref: '#/definitions/model.CarInfo'
+        type: array
+    type: object
+  model.ErrRes:
+    properties:
+      error: {}
+    type: object
+  model.Person:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+  model.RegNumsInput:
+    properties:
+      regNums:
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  title: Car Catalog API
+  version: "1.0"
+paths:
+  /cars:
+    get:
+      consumes:
+      - application/json
+      description: listing cars data
+      parameters:
+      - description: name search by regNum
+        in: query
+        name: regNum
+        type: string
+      - description: name search by mark
+        in: query
+        name: mark
+        type: string
+      - description: name search by model
+        in: query
+        name: model
+        type: string
+      - description: search by year
+        in: query
+        name: year
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Cars'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+      summary: list
+      tags:
+      - cars
+    post:
+      consumes:
+      - application/json
+      description: add car info
+      parameters:
+      - description: regNum collection
+        in: body
+        name: regNums
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegNumsInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Cars'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+      summary: add car info
+      tags:
+      - cars
+  /cars/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete car data
+      parameters:
+      - description: car info ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CarInfo'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+      summary: delete
+      tags:
+      - cars
+    patch:
+      consumes:
+      - application/json
+      description: update car data by ID
+      parameters:
+      - description: car info ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: car info struct
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.CarInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CarInfo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrRes'
+      summary: update
+      tags:
+      - cars
+swagger: "2.0"
