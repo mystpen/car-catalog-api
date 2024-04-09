@@ -54,3 +54,8 @@
      ```http
     DELETE /cars/:id
     ```
+---
+**- To run project:**
+```
+go run ./cmd/api 
+```
