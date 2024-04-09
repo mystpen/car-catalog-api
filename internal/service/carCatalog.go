@@ -30,13 +30,14 @@ type (
 type CarCatalogService struct {
 	carRepo    CarStorage
 	peopleRepo PeopleStorage
-	apiClient ApiClient
+	apiClient  ApiClient
 }
 
 func NewCarCatalogService(carRepo CarStorage, peopleRepo PeopleStorage, apiClient ApiClient) *CarCatalogService {
 	return &CarCatalogService{
 		carRepo:    carRepo,
 		peopleRepo: peopleRepo,
+		apiClient:  apiClient,
 	}
 }
 
@@ -48,42 +49,49 @@ func (cs *CarCatalogService) GetAll(filters model.Filters) ([]*model.CarInfo, er
 	return cs.carRepo.GetAll(filters)
 }
 
-func (cs *CarCatalogService) InsertRegNums(regNums []string, cars *[]model.CarInfo) error {
+func (cs *CarCatalogService) InsertRegNums(regNums []string) ([]*model.CarInfo, error) {
+	var cars []*model.CarInfo
 	for _, regNum := range regNums {
+
 		carInfo, err := cs.apiClient.GetCarInfo(regNum)
-		if err != nil{
+
+		logger.PrintDebug("info from external API", map[string]any{
+			"carInfo": carInfo,
+		})
+
+		if err != nil {
 			if errors.Is(err, api.ErrBadRequest) {
 				logger.PrintDebug("not added regNum", map[string]any{
 					"regNum": regNum,
-					"error": err,
+					"error":  err,
 				})
-			} else{
-				return err
+			} else {
+				return nil, err
 			}
 		}
 
 		if carInfo != nil {
 			err := cs.peopleRepo.Insert(&carInfo.Owner)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			err = cs.carRepo.Insert(carInfo)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			*cars = append(*cars, *carInfo)
+			cars = append(cars, carInfo)
 		}
 
 	}
-	return nil
+	return cars, nil
 }
 
 func (cs *CarCatalogService) Update(cars *model.CarInfo) error {
 	if cars.Owner != (model.Person{}) {
 		err := cs.peopleRepo.Update(&cars.Owner)
-		if err != nil{
+		if err != nil {
 			return err
 		}
 	}

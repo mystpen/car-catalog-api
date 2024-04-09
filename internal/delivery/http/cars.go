@@ -18,7 +18,7 @@ type CarCatalogService interface {
 	GetAll(model.Filters) ([]*model.CarInfo, error)
 	Update(cars *model.CarInfo) error
 	Delete(id int64) error
-	InsertRegNums([]string, *[]model.CarInfo) error
+	InsertRegNums([]string) ([]*model.CarInfo, error)
 }
 
 func (h *Handler) listCarsHandler(w http.ResponseWriter, r *http.Request) {
@@ -88,8 +88,7 @@ func (h *Handler) addCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var cars *[]model.CarInfo
-	err = h.service.InsertRegNums(input.RegNums, cars)
+	cars, err := h.service.InsertRegNums(input.RegNums)
 	if err != nil {
 		errorres.ServerErrorResponse(w, r, err)
 		return

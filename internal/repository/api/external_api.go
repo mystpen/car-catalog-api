@@ -24,7 +24,6 @@ func NewApiClient(config *config.Config) *ApiClient{
 }
 
 func (ac *ApiClient) GetCarInfo(regNum string) (*model.CarInfo, error) {
-	
 	resp, err := http.Get(fmt.Sprintf("%s/info?regNum=%s", ac.config.ExternalAPIURL, regNum))
 	if err != nil {
 		return nil, err
