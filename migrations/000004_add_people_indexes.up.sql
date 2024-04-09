@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS people_id_idx ON people USING (person_id);

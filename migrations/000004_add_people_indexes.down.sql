@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS people_id_idx;
