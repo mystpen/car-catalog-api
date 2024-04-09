@@ -9,6 +9,7 @@ import (
 
 	"github.com/mystpen/car-catalog-api/config"
 	"github.com/mystpen/car-catalog-api/internal/delivery/http"
+	"github.com/mystpen/car-catalog-api/internal/repository/api"
 	"github.com/mystpen/car-catalog-api/internal/repository/postgresql"
 	"github.com/mystpen/car-catalog-api/internal/service"
 	"github.com/mystpen/car-catalog-api/pkg/logger"
@@ -46,9 +47,10 @@ func main() {
 	// prepare repo
 	carRepo := postgresql.NewCarsRepository(db)
 	peopleRepo := postgresql.NewPeopleRepository(db)
+	apiClient := api.NewApiClient(cfg)
 
 	// service layer
-	carCatalogService := service.NewCarCatalogService(carRepo, peopleRepo)
+	carCatalogService := service.NewCarCatalogService(carRepo, peopleRepo, apiClient)
 
 	// handler
 	handler := http.NewHandler(carCatalogService)

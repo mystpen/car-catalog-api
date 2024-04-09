@@ -2,7 +2,6 @@ package http
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/mystpen/car-catalog-api/internal/delivery"
@@ -74,13 +73,13 @@ func (h *Handler) addCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 		errorres.BadRequestResponse(w, r, err)
 		return
 	}
-	
+
 	logger.PrintDebug("", map[string]any{
 		"method": r.Method,
 		"url":    r.URL.String(),
 		"input":  input.RegNums,
 	})
-	fmt.Println("//////////////////////////////////////////")
+
 	// validate
 	v := validator.New()
 	if delivery.ValidateRegNums(v, input.RegNums); !v.Valid() {

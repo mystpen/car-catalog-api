@@ -1,7 +1,11 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/mystpen/car-catalog-api/internal/model"
+	"github.com/mystpen/car-catalog-api/internal/repository/api"
+	"github.com/mystpen/car-catalog-api/pkg/logger"
 )
 
 type (
@@ -16,21 +20,26 @@ type (
 	PeopleStorage interface {
 		Insert(*model.Person) error
 	}
+
+	ApiClient interface {
+		GetCarInfo(regNum string) (*model.CarInfo, error)
+	}
 )
 
 type CarCatalogService struct {
 	carRepo    CarStorage
 	peopleRepo PeopleStorage
+	apiClient ApiClient
 }
 
-func NewCarCatalogService(carRepo CarStorage, peopleRepo PeopleStorage) *CarCatalogService {
+func NewCarCatalogService(carRepo CarStorage, peopleRepo PeopleStorage, apiClient ApiClient) *CarCatalogService {
 	return &CarCatalogService{
 		carRepo:    carRepo,
 		peopleRepo: peopleRepo,
 	}
 }
 
-func (cs *CarCatalogService) Get(id int64) (*model.CarInfo, error){
+func (cs *CarCatalogService) Get(id int64) (*model.CarInfo, error) {
 	return cs.carRepo.Get(id)
 }
 
@@ -39,29 +48,41 @@ func (cs *CarCatalogService) GetAll(filters model.Filters) ([]*model.CarInfo, er
 }
 
 func (cs *CarCatalogService) InsertRegNums(regNums []string, cars *[]model.CarInfo) error {
-	for range regNums {
-		var carInfo *model.CarInfo
-		// get info from API
-
-		err := cs.peopleRepo.Insert(&carInfo.Owner)
-		if err != nil {
-			return err
+	for _, regNum := range regNums {
+		carInfo, err := cs.apiClient.GetCarInfo(regNum)
+		if err != nil{
+			if errors.Is(err, api.ErrBadRequest) {
+				logger.PrintDebug("not added regNum", map[string]any{
+					"regNum": regNum,
+					"error": err,
+				})
+			} else{
+				return err
+			}
 		}
 
-		err = cs.carRepo.Insert(carInfo)
-		if err != nil {
-			return err
+		if carInfo != nil {
+			err := cs.peopleRepo.Insert(&carInfo.Owner)
+			if err != nil {
+				return err
+			}
+
+			err = cs.carRepo.Insert(carInfo)
+			if err != nil {
+				return err
+			}
+
+			*cars = append(*cars, *carInfo)
 		}
 
-		*cars = append(*cars, *carInfo)
 	}
 	return nil
 }
 
-func (cs *CarCatalogService) Update(cars *model.CarInfo) error{
+func (cs *CarCatalogService) Update(cars *model.CarInfo) error {
 	return cs.carRepo.Update(cars)
 }
 
-func (cs *CarCatalogService) Delete(id int64) error{
+func (cs *CarCatalogService) Delete(id int64) error {
 	return cs.carRepo.Delete(id)
 }
