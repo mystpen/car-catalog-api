@@ -17,6 +17,7 @@ type Person struct {
 }
 
 type Filters struct {
+	RegNum   string
 	Mark     string
 	Model    string
 	Year     int

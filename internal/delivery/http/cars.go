@@ -27,6 +27,7 @@ func (h *Handler) listCarsHandler(w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 
 	// regNum
+	filters.RegNum = readString(qs, "regNum", "")
 	filters.Mark = readString(qs, "mark", "")
 	filters.Model = readString(qs, "model", "")
 	filters.Year = readInt(qs, "year", 0, v)
