@@ -29,3 +29,27 @@ func (pr *PeopleRepository) Insert(person *model.Person) error {
 
 	return pr.db.QueryRowContext(ctx, query, args...).Scan(&person.ID)
 }
+
+func (pr *PeopleRepository) Update(person *model.Person) error{
+	query := `
+		UPDATE people
+		SET name = $1, surname = $2, patronymic = $3
+		WHERE person_id = $4`
+
+	args := []any{
+		person.Name,
+		person.Surname,
+		person.Patronymic,
+		person.ID,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := pr.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -122,10 +122,15 @@ func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Declare an input struct to hold the expected data from the client.
 	var input struct {
-		RegNum *string `json:"regNum"`
-		Mark   *string `json:"mark"`
-		Model  *string `json:"model"`
-		Year   *int    `json:"year"`
+		RegNum *string     `json:"regNum"`
+		Mark   *string     `json:"mark"`
+		Model  *string     `json:"model"`
+		Year   *int        `json:"year"`
+		Owner *struct {
+			Name       *string `json:"name"`
+			Surname    *string `json:"surname"`
+			Patronymic *string `json:"patronymic"`
+		}`json:"owner"`
 	}
 
 	logger.PrintDebug("", map[string]any{
@@ -152,6 +157,17 @@ func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if input.Mark != nil {
 		car.Mark = *input.Mark
+	}
+	if input.Owner != nil{
+		if input.Owner.Name != nil{
+			car.Owner.Name = *input.Owner.Name
+		}
+		if input.Owner.Surname != nil{
+			car.Owner.Surname = *input.Owner.Surname
+		}
+		if input.Owner.Patronymic != nil{
+			car.Owner.Patronymic = *input.Owner.Patronymic
+		}
 	}
 
 	// validate

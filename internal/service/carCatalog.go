@@ -19,6 +19,7 @@ type (
 
 	PeopleStorage interface {
 		Insert(*model.Person) error
+		Update(*model.Person) error
 	}
 
 	ApiClient interface {
@@ -80,6 +81,12 @@ func (cs *CarCatalogService) InsertRegNums(regNums []string, cars *[]model.CarIn
 }
 
 func (cs *CarCatalogService) Update(cars *model.CarInfo) error {
+	if cars.Owner != (model.Person{}) {
+		err := cs.peopleRepo.Update(&cars.Owner)
+		if err != nil{
+			return err
+		}
+	}
 	return cs.carRepo.Update(cars)
 }
 
