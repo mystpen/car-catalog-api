@@ -21,12 +21,24 @@ type CarCatalogService interface {
 	InsertRegNums([]string) ([]*model.CarInfo, error)
 }
 
+// @Summary list
+// @Tags cars
+// @Description listing cars data
+// @Accept json
+// @Produce json
+// @Param  regNum   query string  false  "name search by regNum"
+// @Param  mark   query string  false  "name search by mark"
+// @Param  model   query string  false  "name search by model"
+// @Param  year   query string  false  "search by year"
+// @Success 200 {object} model.Cars
+// @Failure 422 {object} model.ErrRes
+// @Failure 500 {object} model.ErrRes
+// @Router       /cars [get]
 func (h *Handler) listCarsHandler(w http.ResponseWriter, r *http.Request) {
 	var filters model.Filters
 	qs := r.URL.Query()
 	v := validator.New()
 
-	// regNum
 	filters.RegNum = readString(qs, "regNum", "")
 	filters.Mark = readString(qs, "mark", "")
 	filters.Model = readString(qs, "model", "")
@@ -64,6 +76,17 @@ func (h *Handler) listCarsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @Summary add car info
+// @Tags cars
+// @Description add car info
+// @Accept json
+// @Produce json
+// @Param  regNums body model.RegNumsInput  true  "regNum collection"
+// @Success 200 {object} model.Cars
+// @Failure 400 {object} model.ErrRes
+// @Failure 422 {object} model.ErrRes
+// @Failure 500 {object} model.ErrRes
+// @Router       /cars [post]
 func (h *Handler) addCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		RegNums []string `json:"regNums"`
@@ -100,6 +123,19 @@ func (h *Handler) addCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @Summary update
+// @Tags cars
+// @Description update car data by ID
+// @Accept json
+// @Produce json
+// @Param  id   path    int  true  "car info ID"
+// @Param  input body   model.CarInput   true  "car info struct"
+// @Success 200 {object} model.CarInfo
+// @Failure 400 {object} model.ErrRes
+// @Failure 404 {object} model.ErrRes
+// @Failure 422 {object} model.ErrRes
+// @Failure 500 {object} model.ErrRes
+// @Router       /cars/{id} [patch]
 func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := readIDParam(r)
 	if err != nil {
@@ -120,17 +156,7 @@ func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Declare an input struct to hold the expected data from the client.
-	var input struct {
-		RegNum *string     `json:"regNum"`
-		Mark   *string     `json:"mark"`
-		Model  *string     `json:"model"`
-		Year   *int        `json:"year"`
-		Owner *struct {
-			Name       *string `json:"name"`
-			Surname    *string `json:"surname"`
-			Patronymic *string `json:"patronymic"`
-		}`json:"owner"`
-	}
+	var input model.CarInput
 
 	logger.PrintDebug("", map[string]any{
 		"method": r.Method,
@@ -157,14 +183,14 @@ func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 	if input.Mark != nil {
 		car.Mark = *input.Mark
 	}
-	if input.Owner != nil{
-		if input.Owner.Name != nil{
+	if input.Owner != nil {
+		if input.Owner.Name != nil {
 			car.Owner.Name = *input.Owner.Name
 		}
-		if input.Owner.Surname != nil{
+		if input.Owner.Surname != nil {
 			car.Owner.Surname = *input.Owner.Surname
 		}
-		if input.Owner.Patronymic != nil{
+		if input.Owner.Patronymic != nil {
 			car.Owner.Patronymic = *input.Owner.Patronymic
 		}
 	}
@@ -192,6 +218,16 @@ func (h *Handler) updateCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @Summary delete
+// @Tags cars
+// @Description delete car data
+// @Accept json
+// @Produce json
+// @Param  id   path      int  true  "car info ID"
+// @Success 200 {object} model.CarInfo
+// @Failure 404 {object} model.ErrRes
+// @Failure 500 {object} model.ErrRes
+// @Router       /cars/{id} [delete]
 func (h *Handler) deleteCarInfoHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := readIDParam(r)
 	if err != nil {

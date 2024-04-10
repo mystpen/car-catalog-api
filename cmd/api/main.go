@@ -13,8 +13,14 @@ import (
 	"github.com/mystpen/car-catalog-api/internal/repository/postgresql"
 	"github.com/mystpen/car-catalog-api/internal/service"
 	"github.com/mystpen/car-catalog-api/pkg/logger"
+	_ "github.com/mystpen/car-catalog-api/docs"
 )
 
+// @title Car Catalog API
+// @version 1.0
+
+// @host localhost:8080
+// @BasePath /
 func main() {
 	logger.New(os.Stdout, logger.LevelDebug)
 
