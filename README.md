@@ -55,7 +55,13 @@
     DELETE /cars/:id
     ```
 ---
-**- To run project:**
+### START PROJECT
+- **make sure there is a .env file. Create it from the example `example.env` file**
+- **install dependencies:**
+```
+go mod tidy
+```
+- **run project:**
 ```
 go run ./cmd/api 
 ```
