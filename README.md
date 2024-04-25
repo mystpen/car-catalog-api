@@ -1,5 +1,4 @@
 # Car Catalog API
-### Test task for junior golang developer position
 
 - **Listing cars data with filtering and pagination:**
     ```http
